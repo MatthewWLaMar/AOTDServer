@@ -1,8 +1,11 @@
-let express = require('express');
-let router = express.Router();
-let comment = import('./models/comments.js');
-let Comment = require('../db').import('../models/comments');
-let validateSession = require('../Middleware/validate-session')
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const { Router } = require("express");
+const { Comments } = require("../models");
+const validateSession = require("../middleware/validate-session");
+const comments = require("../models/comments");
+
+const router = Router();
 
 router.post('/comment', validateSession, (req, res) => {
     const commentEntry = {
