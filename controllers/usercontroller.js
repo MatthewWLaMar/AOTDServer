@@ -7,14 +7,14 @@ const user = require("../models/user");
 
 const router = Router();
 
-router.post("/create", async function (req, res) {
+router.post('/create', async function (req, res) {
   try {
-    user
-      .create({
+    const createUser = {
         username: req.body.user.username,
-        password: bcrypt.hashSync(req.body.user.password, 13),
+        passwordhash: bcrypt.hashSync(req.body.user.passwordhash, 13),
         email: req.body.user.email,
-      })
+      }
+      User.create(createUser)
       .then(function createSuccessful(user) {
         let token = jwt.sign(
           { id: user.id, username: user.username },
@@ -36,14 +36,14 @@ router.post("/create", async function (req, res) {
 
 router.post("/login", async function (req, res) {
   try {
-    user.findOne(
+    User.findOne(
                 {where:{
                     username: req.body.user.username
                 }
             })
-            .then(function loginSuccess(user) {
-                if (user) {
-                    bcrypt.compare(req.body.user.password, user.password, function (err, matches) {
+            .then(function loginSuccess(User) {
+                if (User) {
+                    bcrypt.compare(req.body.user.passwordhash, user.passwordhash, function (err, matches) {
                         if (matches) {
         
                     let token = jwt.sign({id: user.id}, process.env.JWT_SECRET, {expiresIn: 60 * 60 * 24 })
