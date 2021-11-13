@@ -18,7 +18,7 @@ router.post("/", validateSession, async function (req, res) {
       hyperlink: req.body.merchandise.hyperlink,
       owner_id: req.user.id,
     };
-    merchandise
+    Merchandise
       .create(merchEntry)
       .then((merchandise) => res.status(200).json(merchandise));
   } catch (e) {

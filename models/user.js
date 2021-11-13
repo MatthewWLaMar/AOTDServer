@@ -14,6 +14,10 @@ const User = db.define("user", {
   email: {
     type: DataTypes.STRING,
     allowNull: false,
+  },
+  role: {
+    type: DataTypes.STRING,
+    allowNull: true
   }
 });
 

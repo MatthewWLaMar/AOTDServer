@@ -21,7 +21,7 @@ const Merchandise = db.define("merchandise", {
     },
     hyperlink: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: null,
     },
     owner_id: {
         type: DataTypes.INTEGER,

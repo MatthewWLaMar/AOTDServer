@@ -13,6 +13,7 @@ router.post("/create", function (req, res) {
       username: req.body.user.username,
       passwordhash: bcrypt.hashSync(req.body.user.passwordhash, 13),
       email: req.body.user.email,
+      role: req.body.user.role
     })
     .then(function createSuccessful(user) {
       let token = jwt.sign(
@@ -31,32 +32,6 @@ router.post("/create", function (req, res) {
     .catch((err) => res.status(500).json({ error: err }));
 });
 
-// router.post('/create', async function (req, res) {
-//   try {
-//     const createUser = {
-//         username: req.body.user.username,
-//         passwordhash: bcrypt.hashSync(req.body.user.passwordhash, 13),
-//         email: req.body.user.email,
-//       }
-//       User.create(createUser)
-//       .then(function createSuccessful(user) {
-//         let token = jwt.sign(
-//           { id: user.id, username: user.username },
-//           process.env.JWT_SECRET,
-//           { expiresIn: 60 * 60 * 24 }
-//         );
-//         let id = user.id;
-//         res.json({
-//           user: user,
-//           message: "User successfully created",
-//           sessionToken: token,
-//           ID: id,
-//         });
-//       });
-//   } catch (e) {
-//     res.status(500).json({ message: e.message });
-//   }
-// });
 
 router.post("/login", function (req, res) {
   user
@@ -94,5 +69,13 @@ router.post("/login", function (req, res) {
     })
     .catch((err) => res.status(500).json({ error: err }));
 });
+
+router.get("/", validateSession, (req, res) => {
+  const query = { where: { id: req.user.id}}
+  User
+  .findAll(query)
+  .then(admins => res.status(200).json(admins))
+  .catch(err => res.status(500).json({ error: err }))
+})
 
 module.exports = router;
