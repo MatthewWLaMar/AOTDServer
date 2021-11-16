@@ -34,6 +34,18 @@ router.post('/posting', validateSession, async function (req, res) {
   }
 });
 
+ /**** Admin DELETE POST ****/
+ router.delete("/admin/:id", validateSession, async function (req, res) {
+  try {
+    const query = {where: { id: req.params.id}};
+
+    Posting.destroy(query)
+    .then(() => res.status(200).json({message: "Post has been removed"}))
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+});
+
  /**** DELETE POST ****/
  router.delete("/:id", validateSession, async function (req, res) {
   try {
@@ -45,6 +57,7 @@ router.post('/posting', validateSession, async function (req, res) {
     res.status(500).json({ message: e.message });
   }
 });
+
 
 
 

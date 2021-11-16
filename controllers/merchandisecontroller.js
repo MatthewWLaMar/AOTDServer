@@ -41,7 +41,7 @@ router.get("/", async function (req, res) {
 /**** DELETE POST ****/
 router.delete("/:id", validateSession, async function (req, res) {
   try {
-    const query = { where: { id: req.params.id, owner_id: req.user.id } };
+    const query = { where: { id: req.params.id} };
 
     Merchandise.destroy(query).then(() =>
       res.status(200).json({ message: "Merchandise has been removed" })
@@ -62,7 +62,7 @@ router.put("/update/:id", validateSession, async function (req, res) {
       hyperlink: req.body.merchandise.hyperlink,
       owner_id: req.user.id,
     };
-    const query = { where: { id: req.params.id, owner_id: req.user.id } };
+    const query = { where: { id: req.params.id} };
     Merchandise.update(updateMerchandise, query).then((merchandise) =>
       res.status(200).json(merchandise)
     );
