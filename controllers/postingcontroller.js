@@ -1,89 +1,108 @@
-let express = require('express');
-let router = express.Router();
-let Sighting = require('../db').import('../models/sighting');
-let validateSession = require('../Middleware/validate-session');
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const { Router } = require("express");
+const { Posting } = require("../models");
+const validateSession = require("../middleware/validate-session");
+const posting = require("../models/posting");
 
-/**************************
- **** VIEW ALL UPLOADS ****
- **************************/
+const router = Router();
 
-router.get("/", (req, res) => {
-    Sighting.findAll()
-      .then(sightings => res.status(200).json(sightings))
-      .catch(err => res.status(500).json({ error: err }));
-  });
-
-/***********************
- **** DELETE UPLOAD ****
- **********************/
-
-router.delete('/:id', validateSession, function (req, res) {
-    const query = {where: { id: req.params.id, owner_id: req.user.id}};
-
-    Sighting.destroy(query)
-    .then(() => res.status(200).json({message: "Upload has been removed"}))
-    .catch((err) => res.status(500).json({error: err}))
-})
-
-
-router.post('/sighting', validateSession, (req, res) => {
-  const sightingEntry = {
-      bird: req.body.sighting.bird,
-      location: req.body.sighting.location,
-      time: req.body.sighting.time,
-      date: req.body.sighting.date,
-      description: req.body.sighting.description,
-      image: req.body.sighting.image,
-      rarity: req.body.sighting.rarity,
-      private1: req.body.sighting.private1,
+/**** CREATE POST ****/
+router.post('/posting', validateSession, async function (req, res) {
+  try {
+    const postingEntry = {
+      description: req.body.posting.description,
+      image: req.body.posting.image,
       owner_id: req.user.id,
       likes: 0
   }
-  Sighting.create(sightingEntry)
-    .then(sighting => res.status(200).json(sighting))
-    .catch(err => res.status(500).json({ error: err }))
-})
+  Posting.create(postingEntry)
+    .then(posting => res.status(200).json(posting))
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+});
 
-router.get('/mine', validateSession, (req, res) => {
+/**** VIEW ALL POSTS ****/
+
+ router.get("/", async function (req, res) {
+  try {
+    Posting.findAll()
+    .then(postings => res.status(200).json(postings))
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+});
+
+ /**** Admin DELETE POST ****/
+ router.delete("/admin/:id", validateSession, async function (req, res) {
+  try {
+    const query = {where: { id: req.params.id}};
+
+    Posting.destroy(query)
+    .then(() => res.status(200).json({message: "Post has been removed"}))
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+});
+
+ /**** DELETE POST ****/
+ router.delete("/:id", validateSession, async function (req, res) {
+  try {
+    const query = {where: { id: req.params.id, owner_id: req.user.id}};
+
+    Posting.destroy(query)
+    .then(() => res.status(200).json({message: "Post has been removed"}))
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+});
+
+
+
+
+/**** GET YOUR POSTS ****/
+router.get('/mine', validateSession, async function (req, res) {
+  try {
     let userid = req.user.id
-    Sighting.findAll({
+    Posting.findAll({
         where: { owner_id: userid }
     })
     .then(log => res.status(200).json(log))
-    .catch(err => res.status(500).json({ error: err }))
-})
-
-router.put('/update/:id', validateSession, function (req, res)
-{
-  const updateSighting = {
-    bird: req.body.sighting.bird,
-    location: req.body.sighting.location,
-    time: req.body.sighting.time,
-    date: req.body.sighting.date,
-    description: req.body.sighting.description,
-    image: req.body.sighting.image,
-    rarity: req.body.sighting.rarity,
-    private1: req.body.sighting.private1,
-    owner_id: req.user.id
-  };
-
-  
-  const query = { where: { id: req.params.id, owner_id: req.user.id} };
-  Sighting.update(updateSighting, query)
-    .then((sightings) => res.status(200).json(sightings))
-    .catch((err) => res.status(500).json({ error: err }));  
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
 });
 
-router.put('/updatelikes/:id', function (req, res) {
-  const updateLikes = {
-    likes: req.body.sighting.likes
-  };
-  
-  const query = { where: { id: req.params.id, owner_id: req.params.id} };
-  Sighting.update(updateLikes, query)
-    .then((sightings) => res.status(200).json(sightings))
-    .catch((err) => res.status(500).json({ error: err }));  
+/**** EDIT YOUR POST ****/
+router.put('/update/:id', validateSession, async function (req, res) {
+  try {
+    const updatePosting = {
+      description: req.body.posting.description,
+      image: req.body.posting.image,
+      owner_id: req.user.id,
+      likes: 0
+    }
+    const query = { where: { id: req.params.id, owner_id: req.user.id} };
+    Posting.update(updatePosting, query)
+    .then((postings) => res.status(200).json(postings))
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
 });
 
+/**** UPDATE LIKES ****/
+router.put('/updateLikes/:id', async function (req, res) {
+  try {
+    const updateLikes = {
+      likes: req.body.posting.likes
+    };
+    const query = { where: { id: req.params.id, owner_id: req.params.id} };
+    Posting.update(updateLikes, query)
+    .then((postings) => res.status(200).json(postings))
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+});
 
 module.exports = router
