@@ -7,31 +7,8 @@ const posting = require("../models/posting");
 
 const router = Router();
 
-/**** VIEW ALL POSTS ****/
-
- router.get("/", async function (req, res) {
-  try {
-    Posting.findAll()
-    .then(postings => res.status(200).json(postings))
-  } catch (e) {
-    res.status(500).json({ message: e.message });
-  }
-});
-
- /**** DELETE UPLOAD ****/
- router.delete("/:id", async function (req, res) {
-  try {
-    const query = {where: { id: req.params.id, owner_id: req.user.id}};
-
-    Posting.destroy(query)
-    .then(() => res.status(200).json({message: "Post has been removed"}))
-  } catch (e) {
-    res.status(500).json({ message: e.message });
-  }
-});
-
 /**** CREATE POST ****/
-router.post('/posting', async function (req, res) {
+router.post('/posting', validateSession, async function (req, res) {
   try {
     const postingEntry = {
       description: req.body.posting.description,
@@ -46,8 +23,46 @@ router.post('/posting', async function (req, res) {
   }
 });
 
+/**** VIEW ALL POSTS ****/
+
+ router.get("/", async function (req, res) {
+  try {
+    Posting.findAll()
+    .then(postings => res.status(200).json(postings))
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+});
+
+ /**** Admin DELETE POST ****/
+ router.delete("/admin/:id", validateSession, async function (req, res) {
+  try {
+    const query = {where: { id: req.params.id}};
+
+    Posting.destroy(query)
+    .then(() => res.status(200).json({message: "Post has been removed"}))
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+});
+
+ /**** DELETE POST ****/
+ router.delete("/:id", validateSession, async function (req, res) {
+  try {
+    const query = {where: { id: req.params.id, owner_id: req.user.id}};
+
+    Posting.destroy(query)
+    .then(() => res.status(200).json({message: "Post has been removed"}))
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+});
+
+
+
+
 /**** GET YOUR POSTS ****/
-router.get('/mine', async function (req, res) {
+router.get('/mine', validateSession, async function (req, res) {
   try {
     let userid = req.user.id
     Posting.findAll({
@@ -60,12 +75,13 @@ router.get('/mine', async function (req, res) {
 });
 
 /**** EDIT YOUR POST ****/
-router.put('/update/:id', async function (req, res) {
+router.put('/update/:id', validateSession, async function (req, res) {
   try {
     const updatePosting = {
       description: req.body.posting.description,
       image: req.body.posting.image,
       owner_id: req.user.id,
+      likes: 0
     }
     const query = { where: { id: req.params.id, owner_id: req.user.id} };
     Posting.update(updatePosting, query)
